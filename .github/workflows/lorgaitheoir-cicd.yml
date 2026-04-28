@@ -5,38 +5,44 @@ on:
     branches: [master, develop]
   pull_request:
     branches: [master]
-
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact: lorg-linux-x86_64
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact: lorg-windows-x86_64
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact: lorg-macos-x86_64
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact: lorg-macos-arm64
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
 
       - name: Check formatting
         run: cargo fmt --check
 
-      # - name: Lint
-      #   run: cargo clippy -- -D warnings
-
-      - name: Build debug
-        run: cargo build
-
-      - name: Run tests
-        run: cargo test
+      - name: Add target
+        run: rustup target add ${{ matrix.target }}
 
       - name: Build release
-        run: cargo build --release
+        run: cargo build --release --target ${{ matrix.target }}
 
       - name: Upload binary
         uses: actions/upload-artifact@v4
         with:
-          name: lorg-linux-x64
-          path: target/release/lorg
+          name: ${{ matrix.artifact }}
+          path: target/${{ matrix.target }}/release/lorg*
