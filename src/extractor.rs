@@ -1,3 +1,5 @@
+#[allow(clippy::collapsible_if)] // tempfix for cicd - remove later
+#[allow(clippy::new_without_default)] // tempfix for cicd - remove later
 use crate::types::{Chunk, Feature};
 use regex::Regex;
 
